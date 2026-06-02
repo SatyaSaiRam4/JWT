@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+body {
+  margin: 0;
+  background: #f5f7fb;
+}
+
+.auth-shell {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 45%, #ecfccb 100%);
+}

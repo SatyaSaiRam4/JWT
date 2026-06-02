@@ -1,0 +1,76 @@
+ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+
+CREATE TABLE IF NOT EXISTS otp_codes (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR NOT NULL,
+    code VARCHAR NOT NULL,
+    purpose VARCHAR NOT NULL,
+    is_used BOOLEAN NOT NULL DEFAULT FALSE,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS ix_otp_codes_email ON otp_codes(email);
+
+CREATE TABLE IF NOT EXISTS token_blocklist (
+    id SERIAL PRIMARY KEY,
+    jti VARCHAR UNIQUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS ix_token_blocklist_jti ON token_blocklist(jti);
+
+CREATE TABLE IF NOT EXISTS categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR UNIQUE NOT NULL,
+    description TEXT
+);
+
+CREATE TABLE IF NOT EXISTS products (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR NOT NULL,
+    description TEXT,
+    price NUMERIC(10, 2) NOT NULL,
+    stock INTEGER NOT NULL DEFAULT 0,
+    image_url VARCHAR,
+    category_id INTEGER REFERENCES categories(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS addresses (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    full_name VARCHAR NOT NULL,
+    phone VARCHAR NOT NULL,
+    address_line TEXT NOT NULL,
+    city VARCHAR NOT NULL,
+    state VARCHAR NOT NULL,
+    pincode VARCHAR NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS cart_items (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    product_id INTEGER NOT NULL REFERENCES products(id),
+    quantity INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    address_id INTEGER REFERENCES addresses(id),
+    status VARCHAR NOT NULL DEFAULT 'placed',
+    total_amount NUMERIC(10, 2) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS order_items (
+    id SERIAL PRIMARY KEY,
+    order_id INTEGER NOT NULL REFERENCES orders(id),
+    product_id INTEGER NOT NULL REFERENCES products(id),
+    quantity INTEGER NOT NULL,
+    price NUMERIC(10, 2) NOT NULL
+);
