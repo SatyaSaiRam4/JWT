@@ -12,8 +12,8 @@ export function Register() {
   async function onFinish(values: { username: string; email: string; phone?: string; password: string }) {
     try {
       await register(values).unwrap()
-      message.success('Account created. Check OTP in email or backend terminal.')
-      navigate('/verify-otp', { state: { email: values.email } })
+      message.success('Account created. You can login now.')
+      navigate('/login')
     } catch (error) {
       message.error(getApiErrorMessage(error, 'Registration failed'))
     }

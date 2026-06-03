@@ -35,13 +35,19 @@ def create_and_send_otp(db: Session, email: str, purpose: str):
     db.add(otp)
     db.commit()
 
-    send_email(
-        email,
-        "Your OTP code",
-        f"Your OTP is {code}. It is valid for {settings.OTP_EXPIRE_MINUTES} minutes."
-    )
+    try:
+        send_email(
+            email,
+            "Your OTP code",
+            f"Your OTP is {code}. It is valid for {settings.OTP_EXPIRE_MINUTES} minutes."
+        )
+        email_status = "OTP sent to email"
+    except HTTPException as error:
+        print(f"Email failed for {email}: {error.detail}")
+        print(f"Use this OTP for testing: {code}")
+        email_status = "OTP generated. Email failed, check backend terminal for OTP."
 
-    return {"message": "OTP sent to email"}
+    return {"message": email_status}
 
 
 def verify_otp(db: Session, email: str, code: str, purpose: str):
@@ -146,12 +152,6 @@ def login_user(
         raise HTTPException(
             status_code=401,
             detail="Invalid credentials"
-        )
-
-    if not user.is_verified:
-        raise HTTPException(
-            status_code=403,
-            detail="Please verify your email before login"
         )
 
     token = create_access_token(

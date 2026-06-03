@@ -7,7 +7,7 @@ from app.config.settings import settings
 
 
 def send_email(to_email: str, subject: str, body: str):
-    if not settings.SMTP_HOST:
+    if not settings.SMTP_HOST or not settings.SMTP_USER or not settings.SMTP_PASSWORD:
         print("Email sending is not configured.")
         print(f"To: {to_email}")
         print(f"Subject: {subject}")
